@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangular Pyramid Drawer</title>
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 350px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .coordinate-group {
+            margin-bottom: 15px;
+        }
+
+        .coordinate-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .coordinate-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .coordinate-inputs input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar">
+        <h2>Enter Pyramid Coordinates</h2>
+        <p>This draws a 2D projection of a triangular-based pyramid.</p>
+
+        <div class="coordinate-group">
+            <label>P1: Base Corner 1 (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p1-x" value="100" placeholder="X">
+                <input type="number" id="p1-y" value="300" placeholder="Y">
+            </div>
+        </div>
+
+        <div class="coordinate-group">
+            <label>P2: Base Corner 2 (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p2-x" value="400" placeholder="X">
+                <input type="number" id="p2-y" value="300" placeholder="Y">
+            </div>
+        </div>
+        
+         <div class="coordinate-group">
+            <label>P3: Base Corner 3 (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p3-x" value="250" placeholder="X">
+                <input type="number" id="p3-y" value="450" placeholder="Y">
+            </div>
+        </div>
+        
+         <div class="coordinate-group">
+            <label>P4: Apex (Top Point) (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p4-x" value="250" placeholder="X">
+                <input type="number" id="p4-y" value="100" placeholder="Y">
+            </div>
+        </div>
+
+        <button onclick="drawPyramid()">Draw Pyramid</button>
+    </aside>
+
+    <main id="main-content">
+        <canvas id="pyramidCanvas" width="600" height="500"></canvas>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('pyramidCanvas');
+        const ctx = canvas.getContext('2d');
+        const CANVAS_WIDTH = canvas.width;
+        const CANVAS_HEIGHT = canvas.height;
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        }
+
+        function drawPyramid() {
+            clearCanvas();
+
+            const p1 = { x: parseFloat(document.getElementById('p1-x').value), y: parseFloat(document.getElementById('p1-y').value) };
+            const p2 = { x: parseFloat(document.getElementById('p2-x').value), y: parseFloat(document.getElementById('p2-y').value) };
+            const p3 = { x: parseFloat(document.getElementById('p3-x').value), y: parseFloat(document.getElementById('p3-y').value) };
+            const p4 = { x: parseFloat(document.getElementById('p4-x').value), y: parseFloat(document.getElementById('p4-y').value) };
+
+            if ([p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y].some(isNaN)) {
+                alert("Please enter valid numbers for all fields.");
+                return;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y); 
+            ctx.lineTo(p4.x, p4.y); 
+            ctx.lineTo(p2.x, p2.y); 
+            ctx.lineTo(p1.x, p1.y);
+            ctx.closePath();
+            ctx.fillStyle = '#c0c0c0';
+            ctx.fill();
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.stroke();
+            
+            ctx.setLineDash([5, 5]);
+
+            ctx.beginPath();
+            ctx.moveTo(p3.x, p3.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.stroke();
+
+            ctx.setLineDash([]); 
+
+            drawPoint(p4, 'P4 (Apex)');
+            drawPoint(p1, 'P1');
+            drawPoint(p2, 'P2');
+            drawPoint(p3, 'P3');
+        }
+
+        function drawPoint(point, label) {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FF0000';
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '10px Arial';
+            ctx.fillText(label, point.x + 8, point.y - 5);
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            drawPyramid();
+        });
+    </script>
+</body>
+</html>

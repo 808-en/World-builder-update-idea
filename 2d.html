@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Drawer with Grid</title>
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 300px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .coordinate-group {
+            margin-bottom: 15px;
+        }
+
+        .coordinate-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .coordinate-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .coordinate-inputs input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar">
+        <h2>Enter Coordinates (Range ~ -250 to 250)</h2>
+
+        <div class="coordinate-group">
+            <label for="p1-x">Point P1 (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p1-x" value="-100" placeholder="X">
+                <input type="number" id="p1-y" value="100" placeholder="Y">
+            </div>
+        </div>
+
+        <div class="coordinate-group">
+            <label for="p2-x">Point P2 (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p2-x" value="200" placeholder="X">
+                <input type="number" id="p2-y" value="100" placeholder="Y">
+            </div>
+        </div>
+
+        <div class="coordinate-group">
+            <label for="p3-x">Point P3 (X, Y):</label>
+            <div class="coordinate-inputs">
+                <input type="number" id="p3-x" value="50" placeholder="X">
+                <input type="number" id="p3-y" value="-150" placeholder="Y">
+            </div>
+        </div>
+        
+        <button onclick="drawTriangle()">Draw Triangle</button>
+    </aside>
+
+    <main id="main-content">
+        <canvas id="graphCanvas" width="600" height="500"></canvas>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const CANVAS_WIDTH = canvas.width;
+        const CANVAS_HEIGHT = canvas.height;
+        const ORIGIN_X = CANVAS_WIDTH / 2;
+        const ORIGIN_Y = CANVAS_HEIGHT / 2;
+        const GRID_STEP = 50;
+
+        function drawGridAndAxes() {
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            ctx.font = '10px Arial';
+            ctx.fillStyle = '#000';
+
+            for (let x = -ORIGIN_X; x <= ORIGIN_X; x += GRID_STEP) {
+                ctx.beginPath();
+                ctx.moveTo(x, -ORIGIN_Y);
+                ctx.lineTo(x, ORIGIN_Y);
+                ctx.stroke();
+                if (x !== 0) {
+                    ctx.fillText(x, x + 2, 10);
+                }
+            }
+
+            for (let y = -ORIGIN_Y; y <= ORIGIN_Y; y += GRID_STEP) {
+                ctx.beginPath();
+                ctx.moveTo(-ORIGIN_X, y);
+                ctx.lineTo(ORIGIN_X, y);
+                ctx.stroke();
+                if (y !== 0) {
+                    ctx.fillText(-y, 2, y - 2);
+                }
+            }
+
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(-ORIGIN_X, 0);
+            ctx.lineTo(ORIGIN_X, 0);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(0, -ORIGIN_Y);
+            ctx.lineTo(0, ORIGIN_Y);
+            ctx.stroke();
+            
+            ctx.fillText("0,0", 5, -5);
+        }
+
+        function drawTriangle() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.save(); 
+            ctx.translate(ORIGIN_X, ORIGIN_Y); 
+
+            drawGridAndAxes();
+
+            const p1 = { x: parseFloat(document.getElementById('p1-x').value), y: parseFloat(document.getElementById('p1-y').value) };
+            const p2 = { x: parseFloat(document.getElementById('p2-x').value), y: parseFloat(document.getElementById('p2-y').value) };
+            const p3 = { x: parseFloat(document.getElementById('p3-x').value), y: parseFloat(document.getElementById('p3-y').value) };
+
+            if (isNaN(p1.x) || isNaN(p1.y) || isNaN(p2.x) || isNaN(p2.y) || isNaN(p3.x) || isNaN(p3.y)) {
+                alert("Please enter valid numbers for all coordinates.");
+                ctx.restore(); 
+                return;
+            }
+            
+            ctx.beginPath();
+            ctx.moveTo(p1.x, -p1.y); 
+            ctx.lineTo(p2.x, -p2.y);
+            ctx.lineTo(p3.x, -p3.y);
+            ctx.closePath();
+
+            ctx.strokeStyle = '#000000'; 
+            ctx.lineWidth = 2;
+            ctx.fillStyle = '#4CAF50'; 
+            ctx.fill();
+            ctx.stroke();
+
+            drawPoint(p1, 'P1');
+            drawPoint(p2, 'P2');
+            drawPoint(p3, 'P3');
+            
+            ctx.restore(); 
+        }
+
+        function drawPoint(point, label) {
+            ctx.beginPath();
+            ctx.arc(point.x, -point.y, 5, 0, 2 * Math.PI); 
+            ctx.fillStyle = '#FF0000'; 
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '12px Arial';
+            ctx.fillText(label + `(${point.x}, ${point.y})`, point.x + 10, -point.y - 10);
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            drawTriangle();
+        });
+    </script>
+</body>
+</html>
